@@ -5,6 +5,8 @@ Software de gestión interna para una empresa de servicios técnicos (SAT) de el
 Este repositorio contiene únicamente el esqueleto de infraestructura: tres servicios
 independientes, cada uno en su propia carpeta, orquestados con Docker Compose.
 
+> Contexto para agentes de código: [`AGENTS.md`](AGENTS.md).
+
 ## Stack
 
 | Servicio   | Tecnología                                | Carpeta      |
@@ -24,6 +26,7 @@ Versiones fijadas (sin `latest`):
 
 ```text
 .
+├── AGENTS.md              # Contexto para agentes de código
 ├── compose.yml            # Base común (no ejecutar solo)
 ├── compose.dev.yml        # Override de desarrollo
 ├── compose.prod.yml       # Override de producción
