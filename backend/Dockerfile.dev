@@ -1,0 +1,19 @@
+# Imagen de DESARROLLO: ejecuta `dotnet watch` sobre el código montado desde el host.
+FROM mcr.microsoft.com/dotnet/sdk:10.0.403-noble
+
+# curl se usa únicamente para el healthcheck de Docker.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true \
+    DOTNET_NOLOGO=1 \
+    DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+    ASPNETCORE_ENVIRONMENT=Development \
+    ASPNETCORE_URLS=http://+:8080
+
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "watch", "run", "--project", "Fixges.Api/Fixges.Api.csproj", "--no-launch-profile"]

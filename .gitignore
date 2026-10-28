@@ -1,0 +1,27 @@
+# Entornos locales (nunca commitear secretos)
+.env
+.env.*
+!.env.dev.example
+!.env.prod.example
+
+# .NET
+**/bin/
+**/obj/
+**/TestResults/
+*.user
+*.suo
+*.userprefs
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+*.swp
+*~
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

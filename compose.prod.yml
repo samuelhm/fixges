@@ -1,0 +1,29 @@
+# Override de PRODUCCIÓN.
+#   docker compose --env-file .env.prod -f compose.yml -f compose.prod.yml up -d --build
+#
+# El frontend NO publica puertos: Nginx Proxy Manager (contenedor externo a este
+# stack) llega a él por la red `red_proxy` usando el alias `fixges-web` en el puerto 80.
+# El backend y PostgreSQL no publican puertos. El backend solo es alcanzable desde
+# la red interna y, de forma controlada, a través del proxy /api del frontend.
+
+name: fixges-prod
+
+services:
+  db:
+    restart: unless-stopped
+
+  backend:
+    restart: unless-stopped
+
+  frontend:
+    restart: unless-stopped
+    networks:
+      web_net:
+      red_proxy:
+        aliases:
+          - fixges-web
+
+networks:
+  red_proxy:
+    external: true
+    name: red_proxy

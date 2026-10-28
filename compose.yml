@@ -1,0 +1,77 @@
+# Base común del stack. No está pensado para ejecutarse solo.
+#
+#   Desarrollo -> make dev    (compose.yml + compose.dev.yml)
+#   Producción -> make prod   (compose.yml + compose.prod.yml)
+#
+# Reglas de red:
+#   - db:       solo db_net (sin puertos publicados).
+#   - backend:  db_net + web_net (nunca publica puertos).
+#   - frontend: web_net (+ red_proxy en producción para Nginx Proxy Manager).
+
+name: fixges
+
+services:
+  db:
+    build:
+      context: ./database
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?falta POSTGRES_DB en el archivo .env}
+      POSTGRES_USER: ${POSTGRES_USER:?falta POSTGRES_USER en el archivo .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD en el archivo .env}
+    volumes:
+      # PostgreSQL 18+ cambió PGDATA a /var/lib/postgresql/18/docker,
+      # por eso el volumen se monta en el directorio padre.
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - db_net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - db_net
+      - web_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - web_net
+
+volumes:
+  pgdata:
+
+networks:
+  db_net:
+  web_net:
